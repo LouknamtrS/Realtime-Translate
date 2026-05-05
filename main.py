@@ -1,16 +1,12 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from flask import config
-
 from app_state import AppState
 from config import OverlayConfig
 from overlay import TranslateOverlay
 from crop_selector import CropSelector
 from ocr_worker import OCRWorker
-import overlay
 from toolbar import ToolbarOverlay
 from setting_panel import SettingsPanel
-import toolbar
 from config import OverlayConfig, ToolbarConfig
 
 def main():
