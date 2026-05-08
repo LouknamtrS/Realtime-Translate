@@ -9,7 +9,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTabWidget
 from PyQt5.QtWidgets import QComboBox
 
-
 class SettingsPanel(QWidget):
     def __init__(self, overlay_config, toolbar_config, overlay, state, toolbar):
         super().__init__()
@@ -22,32 +21,66 @@ class SettingsPanel(QWidget):
         self.setWindowTitle("Settings")
         self.setAttribute(Qt.WA_ShowWithoutActivating)
         self.setFixedWidth(500)
+        
+        self.setObjectName("SettingsPanel")
 
         self.setStyleSheet("""
-        QWidget {
+        QWidget#SettingsPanel {
             background-color: #ffffff;
             color: #333;
             font-size: 14px;
         }
+
         QGroupBox {
             border: 1px solid #444;
             border-radius: 8px;
             margin-top: 10px;
             padding: 10px;
         }
+
         QGroupBox:title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
             padding: 0 5px;
         }
+
         QPushButton {
             background-color: #333;
+            color: white;
             border: none;
             padding: 6px;
             border-radius: 6px;
         }
+
         QPushButton:hover {
             background-color: #444;
+        }
+
+        QComboBox, QSpinBox {
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            padding: 4px;
+        }
+
+        QComboBox QAbstractItemView {
+            background-color: white;
+            color: black;
+            selection-background-color: #ddd;
+            selection-color: black;
+        }
+
+        QTabWidget::pane {
+            border: none;
+        }
+
+        QTabBar::tab {
+            background: #eee;
+            padding: 6px;
+        }
+
+        QTabBar::tab:selected {
+            background: #ddd;
         }
         """)
 
