@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QTimer
 from PyQt5.QtGui import QIcon
 
 
@@ -18,13 +18,21 @@ class ToolbarOverlay(QWidget):
         self.setCursor(Qt.OpenHandCursor)
 
         self.setWindowFlags(
-            Qt.FramelessWindowHint |
             Qt.WindowStaysOnTopHint |
-            Qt.Tool
+            Qt.FramelessWindowHint |
+            Qt.ToolTip |
+            Qt.WindowDoesNotAcceptFocus
         )
         self.setAttribute(Qt.WA_ShowWithoutActivating)
 
+        # Keep on top timer
+        self.top_timer = QTimer(self)
+        self.top_timer.timeout.connect(self.stay_on_top)
+        # self.top_timer.start(2000)
+
+
         self.setFixedHeight(90)
+        self.setFixedWidth(400)
         self.setObjectName("ToolbarOverlay")
 
         self.update_style()
@@ -57,7 +65,23 @@ class ToolbarOverlay(QWidget):
         self.btn_stop.setCheckable(True)
         self.btn_stop.setChecked(False)
 
+        # Re-show toolbar after cropping
+        self.crop_selector.cropped.connect(self.on_cropped)
+
+        # Center on top of screen by default
+        screen = self.screen().geometry()
+        self.move((screen.width() - self.width()) // 2, 50)
+
         self.show()
+        self.raise_()
+
+    def on_cropped(self):
+        self.show()
+        self.raise_()
+
+    def stay_on_top(self):
+        if self.isVisible():
+            self.raise_()
 
     def create_button(self, icon_path, text):
         btn = QToolButton()
@@ -75,6 +99,7 @@ class ToolbarOverlay(QWidget):
     def toggle_translation(self, checked):
         if checked:
             self.overlay.show()
+            #self.overlay.raise_()
             self.btn_toggle.setIcon(QIcon("icons/eye-off.svg"))
             self.btn_toggle.setText("Hide")
 

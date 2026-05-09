@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QPen
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, pyqtSignal
 import mss
 
 class CropSelector(QWidget):
+    cropped = pyqtSignal()
+
     def __init__(self, state, overlay):
         super().__init__()
         self.state = state
@@ -55,6 +57,7 @@ class CropSelector(QWidget):
 
         self.overlay.update_position_from_crop()
         
+        self.cropped.emit()
         self.hide()
         
 

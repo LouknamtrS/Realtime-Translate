@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QFont
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QTimer
 from PyQt5.QtGui import QFontMetrics
 
 class TranslateOverlay(QWidget):
@@ -10,9 +10,10 @@ class TranslateOverlay(QWidget):
         self.config = config
 
         self.setWindowFlags(
-            Qt.FramelessWindowHint |
             Qt.WindowStaysOnTopHint |
-            Qt.Tool
+            Qt.FramelessWindowHint |
+            Qt.ToolTip |
+            Qt.WindowDoesNotAcceptFocus
         )
 
         self.setAttribute(Qt.WA_ShowWithoutActivating)
@@ -26,6 +27,14 @@ class TranslateOverlay(QWidget):
         self.min_width = 200
         self.min_height = 100
 
+        # Keep on top timer
+        self.top_timer = QTimer(self)
+        self.top_timer.timeout.connect(self.stay_on_top)
+        # self.top_timer.start(2000)
+
+    def stay_on_top(self):
+        if self.isVisible():
+            self.raise_()
 
     def update_position_from_crop(self):
         if self.state.selected_region_display:
@@ -36,6 +45,7 @@ class TranslateOverlay(QWidget):
 
             self.setGeometry(r["left"], r["top"], r["width"], r["height"])
             self.show()
+            self.raise_()
 
     def paintEvent(self, event):
         painter = QPainter(self)
