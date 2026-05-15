@@ -17,8 +17,8 @@ class TestTextCleaning(unittest.TestCase):
         self.assertEqual(self.worker._clean_text("Wait for it.........."), "Wait for it...")
 
     def test_remove_garbage(self):
-        self.assertEqual(self.worker._clean_text("Hello #$@ World!"), "Hello World!")
-        self.assertEqual(self.worker._clean_text("Price: 100€"), "Price: 100")
+        self.assertEqual(self.worker._clean_text("Hello #$@ World!"), "Hello #$@ World!")
+        self.assertEqual(self.worker._clean_text("Price: 100€"), "Price: 100") # € still removed as it's non-ASCII and not in whitelist
 
     def test_collapse_spaces(self):
         self.assertEqual(self.worker._clean_text("  Too   many    spaces  "), "Too many spaces")
@@ -29,7 +29,7 @@ class TestTextCleaning(unittest.TestCase):
 
     def test_full_cleaning(self):
         input_text = "  Strange... symbols @#$% and    too many dots....  "
-        expected = "Strange... symbols and too many dots..."
+        expected = "Strange... symbols @#$% and too many dots..."
         self.assertEqual(self.worker._clean_text(input_text), expected)
 
 if __name__ == '__main__':

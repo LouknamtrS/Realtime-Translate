@@ -113,7 +113,7 @@ class TranslationWorker(QThread):
 
                 # Result-based skipping (similarity > 0.98)
                 text_similarity = difflib.SequenceMatcher(None, stable_text, self.state.last_text).ratio()
-                if text_similarity > 0.80:
+                if text_similarity > 0.98:
                     self.state.last_text = stable_text
                     continue
 
@@ -133,15 +133,14 @@ class TranslationWorker(QThread):
 
             time.sleep(0.05)
         print("WORKER STOPPED")
-            
+
     def _clean_text(self, text):
         if not text:
             return ""
         # Normalize long ellipses (4+ dots) to 3 dots
         text = re.sub(r'\.{4,}', '...', text)
         # Remove non-standard "garbage" characters
-        # Keep letters, numbers, spaces, and common punctuation: .,!?;:'"-
-        text = re.sub(r'[^a-zA-Z0-9\s.,!?;:\'\"-]', '', text)
+        text = re.sub(r'[^a-zA-Z0-9\s.,!?;:\'\"()\[\]{}@#$%^&*+=/_\\|<>~-]', '', text)
         # Collapse multiple spaces and trim
         text = re.sub(r'\s+', ' ', text).strip()
         return text
@@ -163,7 +162,7 @@ class TranslationWorker(QThread):
             self.last_frame = small
 
             if score > self.frame_change_threshold:
-                print(f"DEBUG: Frame Change Detected! Score: {score:.3f}")
+                # print(f"DEBUG: Frame Change Detected! Score: {score:.3f}")
                 return True
 
             return False

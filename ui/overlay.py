@@ -18,6 +18,9 @@ class TranslateOverlay(QWidget):
 
         self.setAttribute(Qt.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Set default opacity to 0 (invisible) until text is detected
+        self.setWindowOpacity(0.0)
 
         self.dragging = False
         self.drag_position = None
@@ -40,10 +43,15 @@ class TranslateOverlay(QWidget):
         if self.state.selected_region_display:
             r = self.state.selected_region_display
 
-            self.state.overlay_position = (r["left"], r["top"])
+            # Position the overlay below the selected region to avoid OCR feedback
+            offset = 10
+            new_left = r["left"]
+            new_top = r["top"] + r["height"] + offset
+
+            self.state.overlay_position = (new_left, new_top)
             self.state.overlay_size = (r["width"], r["height"])
 
-            self.setGeometry(r["left"], r["top"], r["width"], r["height"])
+            self.setGeometry(new_left, new_top, r["width"], r["height"])
             self.show()
             self.raise_()
 

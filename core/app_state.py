@@ -11,7 +11,7 @@ class AppState:
 
         self.translated_text = ""
         self.last_text = ""
-        self.text_alignment = Qt.AlignLeft | Qt.AlignTop
+        self.text_alignment = Qt.AlignCenter | Qt.AlignTop
 
         self.running = False
         self.translation_enabled = True 

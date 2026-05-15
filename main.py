@@ -57,6 +57,11 @@ def main():
 
     def handle_text(text):
         state.translated_text = text
+        # Make overlay visible when text arrives, hide if empty
+        if text.strip():
+            overlay.setWindowOpacity(1.0)
+        else:
+            overlay.setWindowOpacity(0.0)
         overlay.update()
 
     toolbar.worker.text_detected.connect(handle_text)
