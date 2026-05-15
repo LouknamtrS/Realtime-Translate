@@ -1,13 +1,17 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from app_state import AppState
-from config import OverlayConfig
-from overlay import TranslateOverlay
-from crop_selector import CropSelector
-from ocr_worker import OCRWorker
-from toolbar import ToolbarOverlay
-from setting_panel import SettingsPanel
-from config import OverlayConfig, ToolbarConfig
+from core.app_state import AppState
+from core.config import OverlayConfig
+from ui.overlay import TranslateOverlay
+from ui.crop_selector import CropSelector
+from ui.toolbar import ToolbarOverlay
+from ui.setting_panel import SettingsPanel
+from core.config import OverlayConfig, ToolbarConfig
+
+from services.screen_capture_service import ScreenCaptureService
+from services.ocr_service import OCRService
+from services.translation_service import TranslationService
+from workers.translation_worker import TranslationWorker
 
 def main():
     app = QApplication(sys.argv)
@@ -37,7 +41,19 @@ def main():
     )
 
     toolbar.settings_panel = settings
-    toolbar.worker = OCRWorker(state)
+
+    capture_service = ScreenCaptureService()
+    ocr_service = OCRService()
+    translation_service = TranslationService()
+
+    worker = TranslationWorker(
+        state,
+        capture_service,
+        ocr_service,
+        translation_service
+    )
+
+    toolbar.worker = worker
 
     def handle_text(text):
         state.translated_text = text

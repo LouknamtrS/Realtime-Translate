@@ -45,23 +45,75 @@ class SettingsPanel(QWidget):
         }
 
         QPushButton {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 6px;
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
             border-radius: 6px;
+            min-height: 24px;
         }
 
         QPushButton:hover {
-            background-color: #444;
+            background-color: #e8e8e8;
+            border-color: #bbb;
         }
 
-        QComboBox, QSpinBox {
-            background-color: white;
-            color: black;
+        QComboBox, QFontComboBox, QSpinBox {
+            background-color: #f5f5f5;
+            color: #333;
             border: 1px solid #ccc;
-            padding: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            min-width: 150px;
+            min-height: 24px;
         }
+
+        QComboBox:hover, QSpinBox:hover {
+            background-color: #e8e8e8;
+            border-color: #bbb;
+        }
+
+        QComboBox::drop-down {
+            background-color: transparent;
+            width: 24px;
+            border-left: 1px solid #ccc;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        QComboBox::drop-down:hover {
+            background-color: #ddd;
+        }
+
+        QComboBox::down-arrow {
+            border-left: 4px solid none;
+            border-right: 4px solid none;
+            border-top: 5px solid #555;
+            width: 0;
+            height: 0;
+        }
+
+        QSpinBox::up-button, QSpinBox::down-button {
+            background-color: transparent;
+            width: 20px;
+            border-left: 1px solid #ccc;
+        }
+
+        QSpinBox::up-button {
+            border-top-right-radius: 6px;
+        }
+
+        QSpinBox::down-button {
+            border-bottom-right-radius: 6px;
+        }
+
+        QSpinBox::up-arrow, QSpinBox::down-arrow {
+            width: 8px;
+            height: 8px;
+        }
+
+        QSpinBox::up-arrow { border-left: 4px solid none; border-right: 4px solid none; border-bottom: 5px solid #555; width: 0; height: 0; }
+        QSpinBox::down-arrow { border-left: 4px solid none; border-right: 4px solid none; border-top: 5px solid #555; width: 0; height: 0; }
 
         QComboBox QAbstractItemView {
             background-color: white;
@@ -89,10 +141,8 @@ class SettingsPanel(QWidget):
         main_layout.addWidget(self.tabs)
 
         overlay_tab = QWidget()
-        overlay_layout = QVBoxLayout(overlay_tab)
+        overlay_layout = QFormLayout(overlay_tab)
         self.tabs.addTab(overlay_tab, "Text Settings")
-        appearance_group = QGroupBox("Appearance")
-        appearance_layout = QFormLayout()
 
         self.font_box = QFontComboBox()
         self.font_box.currentFontChanged.connect(self.change_font)
@@ -108,10 +158,15 @@ class SettingsPanel(QWidget):
         self.bg_color_btn = QPushButton("Choose Background Color")
         self.bg_color_btn.clicked.connect(self.change_bg_color)
 
-        self.opacity_slider = QSlider(Qt.Horizontal)
-        self.opacity_slider.setRange(0, 255)
-        self.opacity_slider.setValue(self.overlay_config.opacity)
-        self.opacity_slider.valueChanged.connect(self.change_opacity)
+        self.bg_opacity_slider = QSlider(Qt.Horizontal)
+        self.bg_opacity_slider.setRange(0, 255)
+        self.bg_opacity_slider.setValue(self.overlay_config.opacity)
+        self.bg_opacity_slider.valueChanged.connect(self.change_bg_opacity)
+
+        self.text_opacity_slider = QSlider(Qt.Horizontal)
+        self.text_opacity_slider.setRange(0, 255)
+        self.text_opacity_slider.setValue(self.overlay_config.text_opacity)
+        self.text_opacity_slider.valueChanged.connect(self.change_text_opacity)
 
         self.align_box = QComboBox()
         self.align_box.addItem("Left")
@@ -119,29 +174,13 @@ class SettingsPanel(QWidget):
         self.align_box.addItem("Right")
         self.align_box.currentIndexChanged.connect(self.change_alignment)
 
-        appearance_layout.addRow("Font:", self.font_box)
-        appearance_layout.addRow("Size:", self.size_box)
-        appearance_layout.addRow("Text Color:", self.text_color_btn)
-        appearance_layout.addRow("Background:", self.bg_color_btn)
-        appearance_layout.addRow("Opacity:", self.opacity_slider)
-        appearance_layout.addRow("Alignment:", self.align_box)
-
-        appearance_group.setLayout(appearance_layout)
-
-        # ===== Behavior Group =====
-        behavior_group = QGroupBox("Behavior")
-        behavior_layout = QVBoxLayout()
-
-        self.lock_checkbox = QCheckBox("Lock translation position")
-        self.lock_checkbox.stateChanged.connect(self.toggle_lock)
-
-        behavior_layout.addWidget(self.lock_checkbox)
-
-        behavior_group.setLayout(behavior_layout)
-
-        overlay_layout.addWidget(appearance_group)
-        overlay_layout.addWidget(behavior_group)
-        overlay_layout.addStretch()
+        overlay_layout.addRow("Font:", self.font_box)
+        overlay_layout.addRow("Size:", self.size_box)
+        overlay_layout.addRow("Text Color:", self.text_color_btn)
+        overlay_layout.addRow("Text Opacity:", self.text_opacity_slider)
+        overlay_layout.addRow("Background:", self.bg_color_btn)
+        overlay_layout.addRow("BG Opacity:", self.bg_opacity_slider)
+        overlay_layout.addRow("Alignment:", self.align_box)
 
         toolbar_tab = QWidget()
         toolbar_layout = QFormLayout(toolbar_tab)
@@ -168,37 +207,44 @@ class SettingsPanel(QWidget):
         self.overlay.update()
 
     def change_text_color(self):
-        color = QColorDialog.getColor()
+        color = QColorDialog.getColor(self.overlay_config.text_color)
         if color.isValid():
+            color.setAlpha(self.overlay_config.text_opacity)
             self.overlay_config.text_color = color
             self.overlay.update()
 
     def change_bg_color(self):
-        color = QColorDialog.getColor()
+        color = QColorDialog.getColor(self.overlay_config.bg_color)
         if color.isValid():
+            # Use at least 1 alpha to keep window clickable
+            actual_opacity = max(1, self.overlay_config.opacity)
+            color.setAlpha(actual_opacity)
             self.overlay_config.bg_color = color
             self.overlay.update()
 
-    def change_opacity(self, value):
+    def change_bg_opacity(self, value):
         self.overlay_config.opacity = value
-        self.overlay_config.bg_color.setAlpha(value)
+        self.overlay_config.bg_color.setAlpha(max(1, value))
+        self.overlay.update()
+
+    def change_text_opacity(self, value):
+        self.overlay_config.text_opacity = value
+        self.overlay_config.text_color.setAlpha(value)
         self.overlay.update()
         
-
-    def toggle_lock(self, state):
-        self.state.overlay_locked = bool(state)
 
     def change_toolbar_bg(self):
         color = QColorDialog.getColor()
         if color.isValid():
             self.toolbar_config.bg_color = color
-            self.toolbar_config.opacity = color.alpha()
-            self.toolbar.update_style()
+            self.toolbar_config.opacity = max(1, color.alpha())
+            self.toolbar_config.bg_color.setAlpha(self.toolbar_config.opacity)
+            self.toolbar.update()
 
     def change_toolbar_opacity(self, value):
         self.toolbar_config.opacity = value
-        self.toolbar_config.bg_color.setAlpha(value)
-        self.toolbar.update_style()
+        self.toolbar_config.bg_color.setAlpha(max(1, value))
+        self.toolbar.update()
 
     def change_alignment(self, index):
         if index == 0:
