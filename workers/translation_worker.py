@@ -25,19 +25,45 @@ class TranslationWorker(QThread):
         self.is_moving = False
         self.last_move_time = 0
         self.heartbeat_interval = 1.5
+        self.last_region = None
 
     def run(self):
         print("WORKER STARTED")
         while self.state.running:
+            now = time.time()
 
             if not self.state.translation_enabled or not self.state.selected_region:
                 time.sleep(0.2)
                 continue
+            
+            # Reset if region changed
+            if self.state.selected_region != self.last_region:
+                self.last_region = self.state.selected_region
+                self.last_frame = None
+                self.is_moving = False
 
             try:
                 image = self.capture.grab(self.state.selected_region)
-
-                if not self._frame_changed(image) and self.ocr_countdown <= 0:
+                
+                frame_changed = self._frame_changed(image)
+                
+                # Movement logic
+                should_ocr = False
+                if frame_changed and not self.is_moving:
+                    should_ocr = True # first change -> immediate OCR
+                
+                if frame_changed:
+                    self.last_move_time = now
+                    self.is_moving = True
+                
+                if self.is_moving and now - self.last_translate_time >= self.heartbeat_interval:
+                    should_ocr = True # heartbeat during movement
+                
+                if self.is_moving and now - self.last_move_time > 1.0:
+                    self.is_moving = False
+                
+                # Only proceed to OCR if should_ocr is true OR self.ocr_countdown > 0
+                if not should_ocr and self.ocr_countdown <= 0:
                     time.sleep(0.05)
                     continue
 
