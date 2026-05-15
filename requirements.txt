@@ -5,3 +5,4 @@ mss>=9.0.1
 paddleocr>=2.7.0
 paddlepaddle>=2.5.0
 deep-translator>=1.11.4
+openai>=1.0.0
