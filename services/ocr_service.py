@@ -7,7 +7,7 @@ class OCRService:
     def __init__(self):
         self.ocr = PaddleOCR(use_angle_cls=True, lang="en")
 
-    def extract_text(self, image, score_threshold=0.75):
+    def extract_text(self, image, score_threshold=0.8):
         processed = self._preprocess(image)
 
         try:
@@ -21,18 +21,18 @@ class OCRService:
     def _preprocess(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=5)
+        # gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=5)
 
-        thresh = cv2.adaptiveThreshold(
-            gray,
-            255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY,
-            15,
-            5
-        )
+        # thresh = cv2.adaptiveThreshold(
+        #     gray,
+        #     255,
+        #     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #     cv2.THRESH_BINARY,
+        #     15,
+        #     5
+        # )
 
-        return cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+        return cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
 
 
     def _parse_result(self, result, score_threshold):

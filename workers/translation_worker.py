@@ -15,7 +15,7 @@ class TranslationWorker(QThread):
         self.translator = translator
 
         self.last_frame_hash = None
-        self.frame_change_threshold = 0.7
+        self.frame_change_threshold = 0.2
         self.last_translate_time = 0
         self.translate_interval = 0.7
 
