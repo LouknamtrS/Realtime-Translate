@@ -1,6 +1,7 @@
 import os
 from openai import OpenAI
 from core.api_config import APIConfig
+from deep_translator import GoogleTranslator
 
 class TranslationService:
     def __init__(self):
@@ -30,3 +31,18 @@ class TranslationService:
         except Exception as e:
             print(f"Translation API Error: {e}")
             return f"Error: {e}"
+
+
+# class TranslationService:
+#     def __init__(self):
+#         self.translator = GoogleTranslator(source='en', target='th')
+
+#     def translate(self, text):
+#         if not text.strip():
+#             return ""
+#         try:
+#             return self.translator.translate(text)
+#         except Exception as e:
+#             print(f"Translation Error: {e}")
+#             return f"Error: {e}"
+        

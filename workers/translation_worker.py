@@ -25,6 +25,7 @@ class TranslationWorker(QThread):
         self.is_moving = False
         self.last_move_time = 0
         self.heartbeat_interval = 1.5
+        self.last_heartbeat_time = 0
         self.last_region = None
 
     def run(self):
@@ -51,13 +52,15 @@ class TranslationWorker(QThread):
                 should_ocr = False
                 if frame_changed and not self.is_moving:
                     should_ocr = True # first change -> immediate OCR
+                    self.last_heartbeat_time = now
                 
                 if frame_changed:
                     self.last_move_time = now
                     self.is_moving = True
                 
-                if self.is_moving and now - self.last_translate_time >= self.heartbeat_interval:
+                if self.is_moving and now - self.last_heartbeat_time >= self.heartbeat_interval:
                     should_ocr = True # heartbeat during movement
+                    self.last_heartbeat_time = now
                 
                 if self.is_moving and now - self.last_move_time > 1.0:
                     self.is_moving = False
@@ -101,7 +104,10 @@ class TranslationWorker(QThread):
                 # Pick the longer one as the stable text
                 stable_text = text1 if len(text1) >= len(text2) else text2
 
-                if stable_text == self.state.last_text:
+                # Result-based skipping (similarity > 0.98)
+                text_similarity = difflib.SequenceMatcher(None, stable_text, self.state.last_text).ratio()
+                if text_similarity > 0.98:
+                    self.state.last_text = stable_text
                     continue
 
                 now = time.time()
