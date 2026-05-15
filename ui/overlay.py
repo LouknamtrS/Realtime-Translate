@@ -12,7 +12,7 @@ class TranslateOverlay(QWidget):
         self.setWindowFlags(
             Qt.WindowStaysOnTopHint |
             Qt.FramelessWindowHint |
-            Qt.ToolTip |
+            Qt.Window |
             Qt.WindowDoesNotAcceptFocus
         )
 

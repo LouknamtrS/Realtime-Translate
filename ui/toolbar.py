@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton, QApplication
 from PyQt5.QtCore import Qt, QSize, QTimer
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPainter, QColor
 
 
 class ToolbarOverlay(QWidget):
@@ -20,19 +20,19 @@ class ToolbarOverlay(QWidget):
         self.setWindowFlags(
             Qt.WindowStaysOnTopHint |
             Qt.FramelessWindowHint |
-            Qt.ToolTip |
+            Qt.Window |
             Qt.WindowDoesNotAcceptFocus
         )
         self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Keep on top timer
         self.top_timer = QTimer(self)
         self.top_timer.timeout.connect(self.stay_on_top)
-        # self.top_timer.start(2000)
 
 
         self.setFixedHeight(90)
-        self.setFixedWidth(400)
+        self.setFixedWidth(460)
         self.setObjectName("ToolbarOverlay")
 
         self.update_style()
@@ -42,22 +42,28 @@ class ToolbarOverlay(QWidget):
         layout.setSpacing(16)
 
         self.btn_crop = self.create_button("icons/crop.svg", "Crop")
+        self.btn_lock = self.create_button("icons/lock.svg", "Lock")
         self.btn_toggle = self.create_button("icons/eye-off.svg", "Hide")
         self.btn_stop = self.create_button("icons/pause.svg", "Pause")
         self.btn_settings = self.create_button("icons/settings.svg", "Settings")
         self.btn_close = self.create_button("icons/power.svg", "Exit")
 
         layout.addWidget(self.btn_crop)
+        layout.addWidget(self.btn_lock)
         layout.addWidget(self.btn_toggle)
         layout.addWidget(self.btn_stop)
         layout.addWidget(self.btn_settings)
         layout.addWidget(self.btn_close)
  
         self.btn_crop.clicked.connect(self.open_crop)
+        self.btn_lock.clicked.connect(self.toggle_lock)
         self.btn_toggle.clicked.connect(self.toggle_translation)
         self.btn_stop.clicked.connect(self.stop_translation)
         self.btn_settings.clicked.connect(self.open_settings)
         self.btn_close.clicked.connect(self.close_app)
+
+        self.btn_lock.setCheckable(True)
+        self.btn_lock.setChecked(False)
 
         self.btn_toggle.setCheckable(True)
         self.btn_toggle.setChecked(True)
@@ -96,6 +102,15 @@ class ToolbarOverlay(QWidget):
     def open_crop(self):
         self.crop_selector.show()
 
+    def toggle_lock(self, checked):
+        self.state.overlay_locked = checked
+        if checked:
+            self.btn_lock.setIcon(QIcon("icons/lock_unlock.svg"))
+            self.btn_lock.setText("Unlock")
+        else:
+            self.btn_lock.setIcon(QIcon("icons/lock.svg"))
+            self.btn_lock.setText("Lock")
+
     def toggle_translation(self, checked):
         if checked:
             self.overlay.show()
@@ -125,7 +140,7 @@ class ToolbarOverlay(QWidget):
 
     def close_app(self):
         self.state.running = False
-        self.close()
+        QApplication.instance().quit()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -142,22 +157,23 @@ class ToolbarOverlay(QWidget):
         self.setCursor(Qt.OpenHandCursor)
 
     def update_style(self):
-        color = self.config.bg_color
-        rgba = f"rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})"
-
-        self.setStyleSheet(f"""
-        QWidget#ToolbarOverlay {{
-            background-color: {rgba};
-            border-radius: 20px;
-        }}
-
-        QToolButton {{
+        self.setStyleSheet("""
+        QToolButton {
             border: none;
             color: white;
             font-size: 12px;
-        }}
+        }
 
-        QToolButton:hover {{
+        QToolButton:hover {
             background-color: rgba(255,255,255,0.1);
-        }}
+        }
         """)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Smooth background rendering
+        painter.setBrush(self.config.bg_color)
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self.rect(), 20, 20)

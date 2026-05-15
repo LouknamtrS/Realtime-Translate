@@ -7,6 +7,7 @@ class OverlayConfig:
         self.font_family = "Arial"
         self.font_size = 16
         self.opacity = 160
+        self.text_opacity = 255
 
 
 class ToolbarConfig:
