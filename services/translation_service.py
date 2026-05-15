@@ -24,6 +24,7 @@ class TranslationService:
                         "content": f"Translate the following segment into Thai, without additional explanation:\n\n {text}"
                     }
                 ]
+                ,temperature=0.3,
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
