@@ -1,4 +1,5 @@
 import time
+import re
 import numpy as np
 import cv2
 import difflib
@@ -104,9 +105,15 @@ class TranslationWorker(QThread):
                 # Pick the longer one as the stable text
                 stable_text = text1 if len(text1) >= len(text2) else text2
 
+                # Clean text before further processing
+                stable_text = self._clean_text(stable_text)
+                
+                if not stable_text:
+                    continue
+
                 # Result-based skipping (similarity > 0.98)
                 text_similarity = difflib.SequenceMatcher(None, stable_text, self.state.last_text).ratio()
-                if text_similarity > 0.98:
+                if text_similarity > 0.80:
                     self.state.last_text = stable_text
                     continue
 
@@ -127,22 +134,39 @@ class TranslationWorker(QThread):
             time.sleep(0.05)
         print("WORKER STOPPED")
             
+    def _clean_text(self, text):
+        if not text:
+            return ""
+        # Normalize long ellipses (4+ dots) to 3 dots
+        text = re.sub(r'\.{4,}', '...', text)
+        # Remove non-standard "garbage" characters
+        # Keep letters, numbers, spaces, and common punctuation: .,!?;:'"-
+        text = re.sub(r'[^a-zA-Z0-9\s.,!?;:\'\"-]', '', text)
+        # Collapse multiple spaces and trim
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+
     def _frame_changed(self, img):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # small = cv2.resize(gray, (32, 32))
+        try:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # Resize based on scale (0.5x) instead of fixed pixels
+            small = cv2.resize(gray, (0, 0), fx=0.5, fy=0.5)
 
-        if self.last_frame is None:
-            self.last_frame = gray
+            if self.last_frame is None or self.last_frame.shape != small.shape:
+                self.last_frame = small
+                return True
+
+            # Pixel-wise difference
+            diff = cv2.absdiff(small, self.last_frame)
+            score = np.mean(diff)
+            
+            self.last_frame = small
+
+            if score > self.frame_change_threshold:
+                print(f"DEBUG: Frame Change Detected! Score: {score:.3f}")
+                return True
+
+            return False
+        except Exception as e:
+            self.last_frame = None
             return True
-
-        # Pixel-wise difference
-        diff = cv2.absdiff(gray, self.last_frame)
-        score = np.mean(diff)
-        
-        self.last_frame = gray
-
-        if score > self.frame_change_threshold:
-            print(f"DEBUG: Frame Change Detected! Score: {score:.3f}")
-            return True
-
-        return False
