@@ -62,6 +62,10 @@ class TranslationWorker(QThread):
                 if self.is_moving and now - self.last_move_time > 1.0:
                     self.is_moving = False
                 
+                if should_ocr:
+                    self.ocr_countdown = self.ocr_buffer.maxlen
+                    self.ocr_buffer.clear()
+                
                 # Only proceed to OCR if should_ocr is true OR self.ocr_countdown > 0
                 if not should_ocr and self.ocr_countdown <= 0:
                     time.sleep(0.05)
@@ -123,8 +127,6 @@ class TranslationWorker(QThread):
 
         if self.last_frame is None:
             self.last_frame = gray
-            self.ocr_countdown = self.ocr_buffer.maxlen
-            self.ocr_buffer.clear()
             return True
 
         # Pixel-wise difference
@@ -134,8 +136,6 @@ class TranslationWorker(QThread):
         self.last_frame = gray
 
         if score > self.frame_change_threshold:
-            self.ocr_countdown = self.ocr_buffer.maxlen
-            self.ocr_buffer.clear()
             print(f"DEBUG: Frame Change Detected! Score: {score:.3f}")
             return True
 
