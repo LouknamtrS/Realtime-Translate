@@ -55,6 +55,19 @@ class TranslateOverlay(QWidget):
             self.show()
             self.raise_()
 
+    def update_opacity(self):
+        # Automatically determine opacity based on text and lock state
+        if self.state.translated_text.strip():
+            target = 1.0
+        elif not self.state.overlay_locked:
+            # Ghost mode: semi-visible when unlocked so user can see it to drag
+            target = 0.3
+        else:
+            # Hidden: near invisible but still captures mouse events for dragging
+            target = 0.01
+            
+        self.setWindowOpacity(target)
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)

@@ -67,7 +67,9 @@ class TranslationWorker(QThread):
                     self.is_moving = False
                 
                 if should_ocr:
-                    self.ocr_countdown = self.ocr_buffer.maxlen
+                    # Allow up to 3 tries (Trigger + 2 extra) to find a stable pair
+                    # but we will exit early as soon as a match is found.
+                    self.ocr_countdown = 2
                     self.ocr_buffer.clear()
                 
                 # Only proceed to OCR if should_ocr is true OR self.ocr_countdown > 0
@@ -85,6 +87,8 @@ class TranslationWorker(QThread):
                 self.ocr_buffer.append(text)
 
                 if len(self.ocr_buffer) < self.ocr_buffer.maxlen:
+                    # Speed up the next frame grab during the stability check
+                    time.sleep(0.01)
                     continue
 
                 # Fuzzy Stability check: 2/2 using similarity
@@ -101,6 +105,10 @@ class TranslationWorker(QThread):
                 
                 if similarity < 0.85: # Require 85% similarity for stability
                     continue
+                
+                # STABLE PAIR FOUND!
+                # Stop the countdown early to save CPU and latency
+                self.ocr_countdown = 0
                 
                 # Pick the longer one as the stable text
                 stable_text = text1 if len(text1) >= len(text2) else text2
