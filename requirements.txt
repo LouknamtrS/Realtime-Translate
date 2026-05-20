@@ -6,3 +6,4 @@ paddleocr>=3.4.0
 paddlepaddle>=3.3.1
 deep-translator>=1.11.4
 openai>=1.0.0
+pynput>=1.7.6

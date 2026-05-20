@@ -32,7 +32,7 @@ class ToolbarOverlay(QWidget):
 
 
         self.setFixedHeight(90)
-        self.setFixedWidth(460)
+        self.setFixedWidth(520)
         self.setObjectName("ToolbarOverlay")
 
         self.update_style()
@@ -43,8 +43,9 @@ class ToolbarOverlay(QWidget):
 
         self.btn_crop = self.create_button("icons/crop.svg", "Crop")
         self.btn_lock = self.create_button("icons/lock.svg", "Lock")
-        self.btn_toggle = self.create_button("icons/eye-off.svg", "Hide")
+        self.btn_toggle = self.create_button("icons/eye-off.svg", "Hide Text")
         self.btn_stop = self.create_button("icons/pause.svg", "Pause")
+        self.btn_hide_toolbar = self.create_button("icons/minus.svg", "Hide Bar")
         self.btn_settings = self.create_button("icons/settings.svg", "Settings")
         self.btn_close = self.create_button("icons/power.svg", "Exit")
 
@@ -52,6 +53,7 @@ class ToolbarOverlay(QWidget):
         layout.addWidget(self.btn_lock)
         layout.addWidget(self.btn_toggle)
         layout.addWidget(self.btn_stop)
+        layout.addWidget(self.btn_hide_toolbar)
         layout.addWidget(self.btn_settings)
         layout.addWidget(self.btn_close)
  
@@ -59,6 +61,7 @@ class ToolbarOverlay(QWidget):
         self.btn_lock.clicked.connect(self.toggle_lock)
         self.btn_toggle.clicked.connect(self.toggle_translation)
         self.btn_stop.clicked.connect(self.stop_translation)
+        self.btn_hide_toolbar.clicked.connect(self.hide)
         self.btn_settings.clicked.connect(self.open_settings)
         self.btn_close.clicked.connect(self.close_app)
 
@@ -116,12 +119,12 @@ class ToolbarOverlay(QWidget):
             self.overlay.show()
             #self.overlay.raise_()
             self.btn_toggle.setIcon(QIcon("icons/eye-off.svg"))
-            self.btn_toggle.setText("Hide")
+            self.btn_toggle.setText("Hide Text")
 
         else:
             self.overlay.hide()
             self.btn_toggle.setIcon(QIcon("icons/eye.svg"))
-            self.btn_toggle.setText("Show")
+            self.btn_toggle.setText("Show Text")
 
     def stop_translation(self, checked):
         if checked:

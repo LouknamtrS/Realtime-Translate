@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QObject, pyqtSignal
 from core.app_state import AppState
 from core.config import OverlayConfig
 from ui.overlay import TranslateOverlay
@@ -12,6 +13,21 @@ from services.screen_capture_service import ScreenCaptureService
 from services.ocr_service import OCRService
 from services.translation_service import TranslationService
 from workers.translation_worker import TranslationWorker
+
+from pynput import keyboard
+
+class GlobalShortcut(QObject):
+    show_toolbar = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.listener = keyboard.GlobalHotKeys({
+            '<cmd>+1': self.on_activate
+        })
+        self.listener.start()
+
+    def on_activate(self):
+        self.show_toolbar.emit()
 
 def main():
     app = QApplication(sys.argv)
@@ -65,6 +81,12 @@ def main():
         overlay.update()
 
     toolbar.worker.text_detected.connect(handle_text)
+    
+    # Global shortcut setup
+    shortcut = GlobalShortcut()
+    shortcut.show_toolbar.connect(toolbar.show)
+    shortcut.show_toolbar.connect(toolbar.raise_)
+
     state.running = True
     toolbar.worker.start()
 

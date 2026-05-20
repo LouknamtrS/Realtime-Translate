@@ -26,10 +26,10 @@ class OCRService:
         # Restore effective preprocessing from the original worker
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # Increase contrast
-        gray = cv2.convertScaleAbs(gray, alpha=1.8, beta=10)
+        # # # Increase contrast
+        # gray = cv2.convertScaleAbs(gray, alpha=1.8, beta=10)
 
-        # Adaptive thresholding helps with varying lighting and backgrounds
+        # # Adaptive thresholding helps with varying lighting and backgrounds
         thresh = cv2.adaptiveThreshold(
             gray,
             255,
@@ -39,8 +39,9 @@ class OCRService:
             2
         )
 
+
         # PaddleOCR expects a 3-channel BGR image
-        return cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+        return cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
 
 
     def _parse_result(self, result, score_threshold):

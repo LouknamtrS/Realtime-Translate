@@ -3,10 +3,10 @@ from PyQt5.QtGui import QColor
 class OverlayConfig:
     def __init__(self):
         self.text_color = QColor(255, 255, 255)
-        self.bg_color = QColor(0, 0, 0, 0)
+        self.bg_color = QColor(255, 255, 255,0.1)
         self.font_family = "Arial"
         self.font_size = 16
-        self.opacity = 160
+        self.opacity = 0.1
         self.text_opacity = 255
 
 
